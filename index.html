@@ -1,56 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>GameLeaf Sitemap Generator</title>
+<meta charset="UTF-8">
+<title>Sitemap Generator</title>
 </head>
 <body>
-  <pre id="output">Generating sitemap…</pre>
+<script>
+fetch('pages.json')
+  .then(r => r.json())
+  .then(pages => {
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${pages.map(p => `
+  <url>
+    <loc>${p.url}</loc>
+    <lastmod>${p.lastmod}</lastmod>
+  </url>`).join('')}
+</urlset>`;
 
-  <script>
-    const PROXY = "https://api.codetabs.com/v1/proxy?quest=";
-
-    async function fetchLastMod(url) {
-      try {
-        const res = await fetch(PROXY + encodeURIComponent(url));
-        const lastmod = res.headers.get("last-modified");
-        return lastmod
-          ? new Date(lastmod).toISOString()
-          : new Date().toISOString();
-      } catch (e) {
-        return new Date().toISOString();
-      }
-    }
-
-    async function generate() {
-      const res = await fetch("pages.json");
-      const data = await res.json();
-
-      const urls = data.pages;
-      const lastmods = {};
-
-      for (const url of urls) {
-        lastmods[url] = await fetchLastMod(url);
-      }
-
-      const xml = [
-        '<?xml version="1.0" encoding="UTF-8"?>',
-        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-      ];
-
-      urls.forEach(u => {
-        xml.push(`  <url>
-    <loc>${u}</loc>
-    <lastmod>${lastmods[u]}</lastmod>
-  </url>`);
-      });
-
-      xml.push("</urlset>");
-
-      document.body.innerHTML = "<pre>" + xml.join("\n") + "</pre>";
-    }
-
-    generate();
-  </script>
+    document.body.innerText = xml;
+  });
+</script>
 </body>
 </html>
