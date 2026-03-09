@@ -8,78 +8,31 @@
   <pre id="output">Generating sitemap…</pre>
 
   <script>
-    const ROOT = "https://www.gameleaf.it/";
-    const visited = new Set();
-    const queue = [ROOT];
-    const lastmodMap = {};
-
     const PROXY = "https://api.codetabs.com/v1/proxy?quest=";
 
-    async function fetchPage(url) {
+    async function fetchLastMod(url) {
       try {
         const res = await fetch(PROXY + encodeURIComponent(url));
-
         const lastmod = res.headers.get("last-modified");
-        lastmodMap[url] = lastmod
+        return lastmod
           ? new Date(lastmod).toISOString()
           : new Date().toISOString();
-
-        return await res.text();
       } catch (e) {
-        console.error("Errore fetch:", url, e);
-        return "";
+        return new Date().toISOString();
       }
     }
 
-    function extractLinks(html) {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, "text/html");
+    async function generate() {
+      const res = await fetch("pages.json");
+      const data = await res.json();
 
-      const links = new Set();
+      const urls = data.pages;
+      const lastmods = {};
 
-      // 1. Link normali
-      [...doc.querySelectorAll("a")].forEach(a => {
-        if (a.href.startsWith(ROOT)) links.add(a.href);
-      });
-
-      // 2. Link dal JSON interno di Google Sites
-      [...doc.querySelectorAll('script[type="application/ld+json"]')].forEach(script => {
-        try {
-          const data = JSON.parse(script.textContent);
-
-          if (data && data.hasPart) {
-            data.hasPart.forEach(p => {
-              if (p.url && p.url.startsWith("/")) {
-                links.add(ROOT + p.url.replace(/^\//, ""));
-              }
-              if (p.url && p.url.startsWith(ROOT)) {
-                links.add(p.url);
-              }
-            });
-          }
-        } catch (e) {}
-      });
-
-      return [...links];
-    }
-
-    async function crawl() {
-      while (queue.length > 0) {
-        const url = queue.shift();
-        if (visited.has(url)) continue;
-
-        visited.add(url);
-
-        const html = await fetchPage(url);
-        const links = extractLinks(html);
-
-        links.forEach(link => {
-          if (!visited.has(link)) queue.push(link);
-        });
+      for (const url of urls) {
+        lastmods[url] = await fetchLastMod(url);
       }
-    }
 
-    function buildSitemap(urls) {
       const xml = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
@@ -88,19 +41,13 @@
       urls.forEach(u => {
         xml.push(`  <url>
     <loc>${u}</loc>
-    <lastmod>${lastmodMap[u]}</lastmod>
+    <lastmod>${lastmods[u]}</lastmod>
   </url>`);
       });
 
       xml.push("</urlset>");
-      return xml.join("\n");
-    }
 
-    async function generate() {
-      await crawl();
-      const urls = Array.from(visited).sort();
-      const sitemap = buildSitemap(urls);
-      document.body.innerHTML = "<pre>" + sitemap + "</pre>";
+      document.body.innerHTML = "<pre>" + xml.join("\n") + "</pre>";
     }
 
     generate();
