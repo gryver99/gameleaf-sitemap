@@ -2,27 +2,55 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Sitemap Generator</title>
+  <title>GameLeaf Sitemap Generator</title>
 </head>
 <body>
   <pre id="output">Generating sitemap…</pre>
 
   <script>
-    const SITE = "https://www.gameleaf.it/";
+    const ROOT = "https://www.gameleaf.it/";
+    const visited = new Set();
+    const queue = [ROOT];
+    const lastmodMap = {};
 
-    async function fetchHTML(url) {
-      const res = await fetch("https://api.allorigins.win/raw?url=" + encodeURIComponent(url));
-      return await res.text();
+    async function fetchPage(url) {
+      try {
+        const proxy = "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
+        const res = await fetch(proxy);
+
+        const lastmod = res.headers.get("last-modified");
+        if (lastmod) lastmodMap[url] = new Date(lastmod).toISOString();
+
+        return await res.text();
+      } catch (e) {
+        console.error("Errore fetch:", url);
+        return "";
+      }
     }
 
     function extractLinks(html) {
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, "text/html");
       const anchors = [...doc.querySelectorAll("a")];
-      const links = anchors
+
+      return anchors
         .map(a => a.href)
-        .filter(h => h.startsWith(SITE));
-      return [...new Set(links)];
+        .filter(h => h.startsWith(ROOT));
+    }
+
+    async function crawl() {
+      while (queue.length > 0) {
+        const url = queue.shift();
+        if (visited.has(url)) continue;
+
+        visited.add(url);
+        const html = await fetchPage(url);
+        const links = extractLinks(html);
+
+        links.forEach(link => {
+          if (!visited.has(link)) queue.push(link);
+        });
+      }
     }
 
     function buildSitemap(urls) {
@@ -32,7 +60,11 @@
       ];
 
       urls.forEach(u => {
-        xml.push("  <url><loc>" + u + "</loc></url>");
+        const lastmod = lastmodMap[u] || new Date().toISOString();
+        xml.push(`  <url>
+    <loc>${u}</loc>
+    <lastmod>${lastmod}</lastmod>
+  </url>`);
       });
 
       xml.push("</urlset>");
@@ -40,10 +72,9 @@
     }
 
     async function generate() {
-      const html = await fetchHTML(SITE);
-      const links = extractLinks(html);
-      const sitemap = buildSitemap([SITE, ...links]);
-
+      await crawl();
+      const urls = Array.from(visited).sort();
+      const sitemap = buildSitemap(urls);
       document.body.innerHTML = "<pre>" + sitemap + "</pre>";
     }
 
