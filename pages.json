@@ -1,17 +1,23 @@
-{
-  "pages": [
-    "https://www.gameleaf.it/",
-    "https://www.gameleaf.it/nuove-uscite",
-    "https://www.gameleaf.it/nuove-uscite/amarah-dewa",
-    "https://www.gameleaf.it/nuove-uscite/amarah-dewa-red",
-    "https://www.gameleaf.it/nuove-uscite/heavenhells",
-    "https://www.gameleaf.it/nuove-uscite/heavenhells-red",
-    "https://www.gameleaf.it/da-fare",
-    "https://www.gameleaf.it/aggiornamenti",
-    "https://www.gameleaf.it/notizie",
-    "https://www.gameleaf.it/prossimamente",
-    "https://www.gameleaf.it/prossimamente/dissi-alum-final",
-    "https://www.gameleaf.it/beta",
-    "https://www.gameleaf.it/youtube"
-  ]
-}
+[
+  { "url": "https://www.gameleaf.it/", "lastmod": "2026-03-09" },
+  { "url": "https://www.gameleaf.it/nuove-uscite", "lastmod": "2026-03-09" },
+  { "url": "https://www.gameleaf.it/aggiornamenti", "lastmod": "2026-03-09" },
+  { "url": "https://www.gameleaf.it/notizie", "lastmod": "2026-03-09" },
+  { "url": "https://www.gameleaf.it/beta", "lastmod": "2026-03-09" },
+  { "url": "https://www.gameleaf.it/prossimamente", "lastmod": "2026-03-09" },
+  { "url": "https://www.gameleaf.it/youtube", "lastmod": "2026-03-09" },
+ 
+  { "url": "https://www.gameleaf.it/nuove-uscite/amarah-dewa", "lastmod": "2026-03-09" },
+  { "url": "https://www.gameleaf.it/nuove-uscite/amarah-dewa-re", "lastmod": "2026-03-09" },
+  { "url": "https://www.gameleaf.it/nuove-uscite/heavenhells", "lastmod": "2026-03-09" },
+  { "url": "https://www.gameleaf.it/nuove-uscite/heavenhells-red", "lastmod": "2026-03-09" },
+  { "url": "https://www.gameleaf.it/nuove-uscite/da-fare", "lastmod": "2026-03-09" },
+
+  { "url": "https://www.gameleaf.it/prossimamente/dissidia-duellum-final", "lastmod": "2026-03-09" },
+  
+  { "url": "https://www.gameleaf.it/info/su-di-me", "lastmod": "2026-03-09" },
+  { "url": "https://www.gameleaf.it/info/contatti", "lastmod": "2026-03-09" },
+  { "url": "https://www.gameleaf.it/info/avvertenze", "lastmod": "2026-03-09" },
+  { "url": "https://www.gameleaf.it/info/termini-e-condizioni", "lastmod": "2026-03-09" },
+  { "url": "https://www.gameleaf.it/info/informativa-sulla-privacy", "lastmod": "2026-03-09" }
+]
