@@ -15,7 +15,7 @@
 
     async function fetchPage(url) {
       try {
-        const proxy = "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
+        const proxy = "https://cors.isomorphic-git.org/" + url;
         const res = await fetch(proxy);
 
         const lastmod = res.headers.get("last-modified");
@@ -23,7 +23,7 @@
 
         return await res.text();
       } catch (e) {
-        console.error("Errore fetch:", url);
+        console.error("Errore fetch:", url, e);
         return "";
       }
     }
