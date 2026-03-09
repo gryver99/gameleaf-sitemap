@@ -13,13 +13,19 @@
     const queue = [ROOT];
     const lastmodMap = {};
 
+    // Proxy stabile compatibile con Google Sites
+    const PROXY = "https://api.codetabs.com/v1/proxy?quest=";
+
     async function fetchPage(url) {
       try {
-        const proxy = "https://cors.isomorphic-git.org/" + url;
-        const res = await fetch(proxy);
+        const res = await fetch(PROXY + encodeURIComponent(url));
 
         const lastmod = res.headers.get("last-modified");
-        if (lastmod) lastmodMap[url] = new Date(lastmod).toISOString();
+        if (lastmod) {
+          lastmodMap[url] = new Date(lastmod).toISOString();
+        } else {
+          lastmodMap[url] = new Date().toISOString();
+        }
 
         return await res.text();
       } catch (e) {
@@ -31,11 +37,14 @@
     function extractLinks(html) {
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, "text/html");
+
       const anchors = [...doc.querySelectorAll("a")];
 
-      return anchors
+      const links = anchors
         .map(a => a.href)
         .filter(h => h.startsWith(ROOT));
+
+      return [...new Set(links)];
     }
 
     async function crawl() {
@@ -44,6 +53,7 @@
         if (visited.has(url)) continue;
 
         visited.add(url);
+
         const html = await fetchPage(url);
         const links = extractLinks(html);
 
@@ -60,10 +70,9 @@
       ];
 
       urls.forEach(u => {
-        const lastmod = lastmodMap[u] || new Date().toISOString();
         xml.push(`  <url>
     <loc>${u}</loc>
-    <lastmod>${lastmod}</lastmod>
+    <lastmod>${lastmodMap[u]}</lastmod>
   </url>`);
       });
 
