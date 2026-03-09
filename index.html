@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Sitemap Generator</title>
+</head>
+<body>
+  <pre id="output">Generating sitemap…</pre>
+
+  <script>
+    const SITE = "https://www.gameleaf.it/";
+
+    async function fetchHTML(url) {
+      const res = await fetch("https://api.allorigins.win/raw?url=" + encodeURIComponent(url));
+      return await res.text();
+    }
+
+    function extractLinks(html) {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, "text/html");
+      const anchors = [...doc.querySelectorAll("a")];
+      const links = anchors
+        .map(a => a.href)
+        .filter(h => h.startsWith(SITE));
+      return [...new Set(links)];
+    }
+
+    function buildSitemap(urls) {
+      const xml = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+      ];
+
+      urls.forEach(u => {
+        xml.push("  <url><loc>" + u + "</loc></url>");
+      });
+
+      xml.push("</urlset>");
+      return xml.join("\n");
+    }
+
+    async function generate() {
+      const html = await fetchHTML(SITE);
+      const links = extractLinks(html);
+      const sitemap = buildSitemap([SITE, ...links]);
+
+      document.body.innerHTML = "<pre>" + sitemap + "</pre>";
+    }
+
+    generate();
+  </script>
+</body>
+</html>
