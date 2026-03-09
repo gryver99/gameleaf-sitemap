@@ -1,0 +1,25 @@
+name: Update Sitemap
+
+on:
+  schedule:
+    - cron: "0 2 * * *"   # ogni notte alle 02:00
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Update timestamp to force rebuild
+        run: |
+          date +%s > timestamp.txt
+
+      - name: Commit changes
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add .
+          git commit -m "Auto-update sitemap" || echo "No changes"
+          git push
