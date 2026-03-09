@@ -13,7 +13,6 @@
     const queue = [ROOT];
     const lastmodMap = {};
 
-    // Proxy stabile compatibile con Google Sites
     const PROXY = "https://api.codetabs.com/v1/proxy?quest=";
 
     async function fetchPage(url) {
@@ -21,11 +20,9 @@
         const res = await fetch(PROXY + encodeURIComponent(url));
 
         const lastmod = res.headers.get("last-modified");
-        if (lastmod) {
-          lastmodMap[url] = new Date(lastmod).toISOString();
-        } else {
-          lastmodMap[url] = new Date().toISOString();
-        }
+        lastmodMap[url] = lastmod
+          ? new Date(lastmod).toISOString()
+          : new Date().toISOString();
 
         return await res.text();
       } catch (e) {
@@ -38,13 +35,32 @@
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, "text/html");
 
-      const anchors = [...doc.querySelectorAll("a")];
+      const links = new Set();
 
-      const links = anchors
-        .map(a => a.href)
-        .filter(h => h.startsWith(ROOT));
+      // 1. Link normali
+      [...doc.querySelectorAll("a")].forEach(a => {
+        if (a.href.startsWith(ROOT)) links.add(a.href);
+      });
 
-      return [...new Set(links)];
+      // 2. Link dal JSON interno di Google Sites
+      [...doc.querySelectorAll('script[type="application/ld+json"]')].forEach(script => {
+        try {
+          const data = JSON.parse(script.textContent);
+
+          if (data && data.hasPart) {
+            data.hasPart.forEach(p => {
+              if (p.url && p.url.startsWith("/")) {
+                links.add(ROOT + p.url.replace(/^\//, ""));
+              }
+              if (p.url && p.url.startsWith(ROOT)) {
+                links.add(p.url);
+              }
+            });
+          }
+        } catch (e) {}
+      });
+
+      return [...links];
     }
 
     async function crawl() {
